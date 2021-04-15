@@ -14,40 +14,44 @@
 
           <div class="row">
             <div class="col">
-              <input type="text" class="form-control" placeholder="Author" aria-label="First name">
+              <input type="text" class="form-control" placeholder="Author" id="author">
             </div>
             <div class="col">
-              <input type="text" class="form-control" placeholder="Publish Date" aria-label="Last name">
+              <input type="text" class="form-control" placeholder="Title" id="title">
+            </div>
+            <div class="col">
+              <input type="date" class="form-control" placeholder="Publish Date" id="publish_date">
             </div>
 
             <div class="col">
-              <input type="text" class="form-control" placeholder="ISBN" aria-label="Last name">
+              <input type="text" class="form-control" placeholder="ISBN" id="isbn" value="9782820339454">
             </div>
 
             <div class="col">
-              <button type="submit" class="btn btn-primary">Search</button>
+              <button type="submit" class="btn btn-primary" onclick="get_books();">Search</button>
             </div>
           </div>
-          <div class="row">
-            <div class="card" style="width: 18rem;">
-              <img src="http://books.google.com/books/content?id=YZkXEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api" class="card-img-top" alt="...">
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
+
+          <div class="row" id="booksPanel">
+
+          </div>
+          <!-- TODO: add description with read-More button -->
+          
+          <!-- <div class="card" style="width: 18rem;">
+            <img src="http://books.google.com/books/content?id=YZkXEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api" class="card-img-top" alt="...">
+            <div class="card-body">
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div> -->
+<!-- 
+          <div class="card card-outline-info" id="'+i+'Panel">
+            <div class="card-title">
+              <span>${title}</span>
             </div>
-            <div class="card" style="width: 18rem;">
-              <img src="http://books.google.com/books/content?id=YZkXEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api" class="card-img-top" alt="...">
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
-            </div>
-            <div class="card" style="width: 18rem;">
-              <img src="http://books.google.com/books/content?id=YZkXEAAAQBAJ&printsec=frontcover&img=1&zoom=5&edge=curl&source=gbs_api" class="card-img-top" alt="...">
-              <div class="card-body">
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              </div>
-            </div>
-          </div>  
+            <img src="${image}"></div>
+            <div class="card-block">
+            <p>${description}</p>
+          </div> -->
+
         <script src="js/jquery-3.6.0.min.js"></script>
         <script src="js/script.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
