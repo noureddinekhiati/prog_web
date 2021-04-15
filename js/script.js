@@ -5,28 +5,37 @@ const base_url = 'https://www.googleapis.com/books/v1/volumes?q=';
 $("#alert").hide();
 
 function extract_values() {
-    let author = $('#author').val();
-    let title = $('#title').val();
+    let author = $('#author').val().toLocaleLowerCase();
+    let title = $('#title').val().toLocaleLowerCase();
     let publish_date = $('#publish_date').val();
-    let isbn = $('#isbn').val();
+    let isbn = $('#isbn').val().toLocaleLowerCase();
 
-    return {'author' : author, 'title' : title, 'publish_date' : publish_date, 'isbn' : isbn};
+    return {'isbn' : isbn, 'author' : author, 'title' : title, 'publish_date' : publish_date};
 }
 
 function add_cards(response) {
     // reset
 
-    let constraints = extract_values()
+    let constraints = extract_values();
 
     for (var i=0; i < response.items.length; i++) {
-        let title = response.items[i].volumeInfo['title'];
-        let authors = response.items[i].volumeInfo['authors'];
-        let description = response.items[i].volumeInfo['description'];
-        let image = response.items[i].volumeInfo['imageLinks']['thumbnail'];
-        let link = response.items[i].volumeInfo['previewLink'];
-        let isbn = response.items[i].volumeInfo['industryIdentifiers']; // list
+        let volumeInfo = response.items[i].volumeInfo;
+        
+        let title = 'title' in volumeInfo ? volumeInfo['title'] : "";
+        let authors = 'authors' in volumeInfo ? volumeInfo['authors'] : [];
+        let description = 'description' in volumeInfo ? volumeInfo['description'] : "";
+        let image_links = 'imageLinks' in volumeInfo ? volumeInfo['imageLinks'] : [];
+        let image = 'thumbnail' in image_links ? image_links['thumbnail'] : "";
+        let link = "previewLink" in volumeInfo ? volumeInfo['previewLink'] : "";
+        let published_date = "publishedDate" in volumeInfo ? volumeInfo['publishedDate'] : "";
 
-        var col = $('<div class="col-lg-3"></div>');
+        let isbns = []; // list
+        if ("industryIdentifiers" in volumeInfo)
+            volumeInfo['industryIdentifiers'].forEach(element => {
+                isbns.push(element['identifier']);
+            });
+
+        var col = $('<div class="col-lg-3 mb-3"></div>');
         var books_panel = $(`
             <div class="card" style="width: 15rem; display: inline-block">
                 <img class="card-img-top" src="${image}" alt="Card image cap">
@@ -37,9 +46,40 @@ function add_cards(response) {
                 </div>
             </div>
         `);
+
+        // filtering
+        let m = new Map();
+        if(isbns)
+            m.set('isbn', isbns);
+        if(title)
+            m.set('title', [title]);
+        if(authors)
+            m.set('author', authors);
         
-        books_panel.appendTo(col);
-        col.appendTo('#booksPanel');
+        // m.set(constraints['publish_date'], date); mn b3d
+        let add = true;
+
+        for (const [key, value] of Object.entries(constraints)) {  
+            if (key == 'publish_date') continue;
+            
+            if (key && m.has(key)) {
+                let possible_vals = m.get(key);
+
+                let is_in = possible_vals.map(function(item) {
+                    if (item.toLocaleLowerCase().includes(value)) return true; return false;
+                }).some(v => v == true);
+                
+                add *= is_in;
+                
+                if(!add)
+                    break;
+            }
+        }
+
+        if (add) {
+            books_panel.appendTo(col);
+            col.appendTo('#booksPanel');
+        }
     }
 }
 
