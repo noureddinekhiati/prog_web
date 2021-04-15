@@ -18,7 +18,7 @@ function add_cards(response) {
 
     let constraints = extract_values();
 
-    for (var i=0; i < response.items.length; i++) {
+    for (let i=0; i < response.items.length; i++) {
         let volumeInfo = response.items[i].volumeInfo;
         
         let title = 'title' in volumeInfo ? volumeInfo['title'] : "";
@@ -41,8 +41,16 @@ function add_cards(response) {
                 <img class="card-img-top" src="${image}" alt="Card image cap">
                 <div class="card-body">
                     <h5 class="card-title">${title}</h5>
-                    <!--<p class="card-text">${description}</p>-->
-                    <a href="${link}" target="_blank" class="stretched-link"></a>
+                    <div class='description'>
+                        ${description.split(' ').slice(0, 10).join(' ')}
+
+                        <p class="card-text collapse" id="more_${i}">
+                            ${description.split(' ').slice(10).join(' ')}
+                        </p>
+
+                        <a href="#more_${i}" data-toggle="collapse">...more</a>
+                    </div>
+                    <!--<a href="${link}" target="_blank" class="stretched-link"></a>-->
                 </div>
             </div>
         `);
