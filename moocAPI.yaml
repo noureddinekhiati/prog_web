@@ -1,0 +1,380 @@
+openapi: 3.0.0
+info:
+  description: "plateforme de cours en ligne en trois langues."
+  version: "v1"
+  title: "MOOC API"
+  contact:
+    email: "amine.marzouki@etu.u-paris.fr"
+
+servers:
+  - url: /api/v1/{lang}
+    variables:
+      lang:
+        enum:
+          - 'en'
+          - 'fr'
+          - 'de'
+        default: 'fr'
+
+tags:
+- name: "professor"
+  description: "Manage professors"
+
+paths:
+  /professors:
+    get:
+      tags:
+      - "professor"
+      summary: Returns all registered professors
+      responses:
+        '200':      
+          description: OK
+          content:  
+            application/json:  
+             schema: 
+               $ref: '#/components/schemas/Professor'
+            application/xml:   
+             schema: 
+               $ref: '#/components/schemas/Professor'
+               
+    post:
+      tags:
+      - "professor"
+      summary: Creates a professor.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Professor'
+      responses: 
+        '201':
+          description: Created
+        default:
+          description: Unexpected error
+  
+  /professors/{prof_id}:
+    get:
+      tags:
+        - "professor"
+      summary: Returns a professor by id
+      parameters:
+        - name: prof_id
+          in: path
+          required: true
+          description: The ID of the professor to return.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: A professor object.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Professor'
+        '400':
+          description: The specified professor ID is invalid (not a number).
+        '404':
+          description: A professor with the specified ID was not found.
+        default:
+          description: Unexpected error
+    put:
+      tags:
+      - "professor"
+      summary: Update a professor's available time slots.
+      parameters:
+        - name: prof_id
+          in: path
+          required: true
+          description: The ID of the professor.
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                format: date-time
+      responses: 
+        '201':
+          description: Updated
+        default:
+          description: Unexpected error
+      security: 
+        - oAuthSample: 
+          - write_pets
+          - read_pets  
+          
+  /availableTimeSlots/{prof_id}:
+    get:
+      tags:
+        - "timing"
+      summary: Returns the available time slots of a given professor.
+      parameters:
+        - name: prof_id
+          in: path
+          required: true
+          description: The ID of the professor to return.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: An array of timeslots.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: date-time
+        '400':
+          description: The specified professor ID is invalid (not a number).
+        '404':
+          description: A professor with the specified ID was not found.
+        default:
+          description: Unexpected error
+  
+  /schedule/{prof_id}:
+    get:
+      tags:
+        - "timing"
+      summary: connaitre les horaires pour un professeur donné.
+      parameters:
+        - name: prof_id
+          in: path
+          required: true
+          description: The ID of the professor.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: An array of timeslots (schedule not free slots).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: date-time
+        '400':
+          description: The specified professor ID is invalid (not a number).
+        '404':
+          description: A professor with the specified ID was not found.
+        default:
+          description: Unexpected error
+          
+  /planning/{prof_id}:
+    get:
+      tags:
+        - "timing"
+      summary: Le planning sur une plage horaire donnée pour un professeur identifié dans la plateforme. (the only route that mentionned auth)
+      parameters:
+        - name: prof_id
+          in: path
+          required: true
+          description: The ID of the professor.
+          schema:
+            type: integer
+            minimum: 1
+        - in: query
+          required: true
+          name: start
+          schema:
+            type: string
+            format: date-time
+          description: the start date of "plage horaire"
+        - in: query
+          required: true
+          name: end
+          schema:
+            type: string
+            format: date-time
+          description: the end date of "plage horaire"
+      responses:
+        '200':
+          description: An array of timeslots (schedule not free slots).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: date-time
+        '400':
+          description: The specified professor ID is invalid (not a number).
+        '404':
+          description: A professor with the specified ID was not found.
+        default:
+          description: Unexpected error
+      security: 
+        - oAuthSample: 
+          - read_pets
+          
+  /creneau:
+    get:
+      tags:
+        - "timing"
+      summary: récupérer le créneau disponible le plus proche de la date d’aujourd’hui.
+      operationId: "getCreneau"
+      description: getCreneau() method is the one responsible to get the current date and return the closest available time slot.
+      responses:
+        '200':
+          description: An array of timeslots.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: date-time
+        default:
+          description: Unexpected error
+          
+  /deadlines:
+    get:
+      tags:
+        - "timing"
+      summary:  récupérer toutes les échéances à venir.
+      responses:
+        '200':
+          description: An array of timeslots (all deadlines).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                  format: date-time
+        default:
+          description: Unexpected error
+          
+
+  /revenue:
+    get:
+      tags:
+        - "Finance"
+      summary: obtenir le chiffre d’affaire réalisé ou prévu (en fonction          d’une plage horaire passée ou future donnée).
+      parameters:
+        - in: query
+          required: true
+          name: start
+          schema:
+            type: string
+            format: date-time
+          description: the start date of "plage horaire"
+        - in: query
+          required: true
+          name: end
+          schema:
+            type: string
+            format: date-time
+          description: the end date of "plage horaire"
+      responses:
+        '200':
+          description: Chiffre d'affaire (nombre).
+          content:
+            application/json:
+              schema:
+                type: number
+        '400':
+          description: The specified professor ID is invalid (not a number).
+        '404':
+          description: A professor with the specified ID was not found.
+        default:
+          description: Unexpected error
+  
+  /effiency:
+    get:
+      tags:
+        - "Finance"
+      summary: Ratio d’efficacité du système comme étant le chiffre d’affaire prévu sur le chiffre d’affaire total réalisable pour un jour donné. 
+      parameters:
+        - in: query
+          required: true
+          name: day
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Chiffre d'affaire (nombre).
+          content:
+            application/json:
+              schema:
+                type: number
+        default:
+          description: Unexpected error
+          
+  /remuneration:
+    get:
+      tags:
+        - "Finance"
+      summary: rémunérer ses professeurs en se dégageant une marge de 20%.
+      operationId: "payProfessors"
+      description: calculate the 20% margin and pay the professors.
+      responses:
+        '200':
+          description: Array of pairs (prof_id, salary).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pair'
+        default:
+          description: Unexpected error
+        
+components:
+  schemas:
+    Professor:
+      description: "Professor class"
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        course_type: 
+          description: "formats de cours"
+          type: string
+          enum: [long, classic]
+        hourly_wage:
+          type: number
+        available_time:
+          description: "available time slots will be full at first and then each reservation will remove the given time slot."
+          type: array
+          items:
+            type: string
+            format: date-time
+        teaching_classes:
+          description: "Which class can this prof teach."
+          type: array
+          items:
+            type: integer
+
+    Pair:
+      description: "Pair of (int, number). Will serve in remuneration response"
+      type: object
+      properties:
+        prof_id:
+          type: integer
+        salary:
+          type: number
+
+  securitySchemes:
+    oAuthSample:
+      type: oauth2
+      description: This API uses OAuth 2 with the implicit grant flow.
+      flows:
+        implicit:
+          authorizationUrl: https://localhost/login
+          scopes:
+            read_planning: read your plannings.
+            write_planning: modify plannings.
